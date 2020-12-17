@@ -61,7 +61,6 @@ const App = () => {
   const [open, setOpen] = useState(false);
   const [processesQty, setProcessesQty] = useState(2);
   const [processes, setProcesses] = useState(defaultProcesses);
-  // const handleNext = () => setActiveStep(activeStep + 1);
   const handleNext = () => {
     switch (activeStep) {
       case 0:
