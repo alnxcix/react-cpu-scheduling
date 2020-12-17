@@ -145,14 +145,14 @@ export const MLQ = (processes, mlqs) => {
     );
     queue = queue.filter(
       (element) =>
-        element.queueNumber ===
+        element.assignedQueueNumber ===
         Math.min.apply(
           Math,
-          queue.map((element) => element.queueNumber)
+          queue.map((element) => element.assignedQueueNumber)
         )
     );
     if (queue.length > 0) {
-      let activeAlgorithm = mlqs[queue[0].queueNumber];
+      let activeAlgorithm = mlqs[queue[0].assignedQueueNumber];
 
       if (activeAlgorithm.mode === "FCFS") {
         let electedProcess = queue.sort((a, b) =>

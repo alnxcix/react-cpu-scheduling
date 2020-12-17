@@ -25,7 +25,7 @@ const FormRow = ({
     period,
     pid,
     priorityNumber,
-    queueNumber,
+    assignedQueueNumber,
   } = process;
   return (
     <Grid item xs={12}>
@@ -69,7 +69,8 @@ const FormRow = ({
           if (
             algorithm === "PRIO" ||
             algorithm === "EDF" ||
-            (algorithm === "MLQ" && mlqAlgorithms[queueNumber].mode === "PRIO")
+            (algorithm === "MLQ" &&
+              mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
           )
             return (
               <Grid item xs>
@@ -78,7 +79,7 @@ const FormRow = ({
                   label={
                     algorithm === "PRIO" ||
                     (algorithm === "MLQ" &&
-                      mlqAlgorithms[queueNumber].mode === "PRIO")
+                      mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
                       ? "Priority"
                       : "Period"
                   }
@@ -86,7 +87,7 @@ const FormRow = ({
                     if (
                       algorithm === "PRIO" ||
                       (algorithm === "MLQ" &&
-                        mlqAlgorithms[queueNumber].mode === "PRIO")
+                        mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
                     )
                       process.priorityNumber = +target.value;
                     else process.period = +target.value;
@@ -98,7 +99,7 @@ const FormRow = ({
                   value={
                     algorithm === "PRIO" ||
                     (algorithm === "MLQ" &&
-                      mlqAlgorithms[queueNumber].mode === "PRIO")
+                      mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
                       ? priorityNumber
                       : period
                   }
@@ -112,16 +113,20 @@ const FormRow = ({
             return (
               <Grid item xs>
                 <FormControl fullWidth variant="outlined">
-                  <InputLabel>Queue Number</InputLabel>
+                  <InputLabel>Assigned Queue Number</InputLabel>
                   <Select
-                    value={queueNumber}
+                    value={
+                      assignedQueueNumber >= mlqAlgorithmsQty
+                        ? null
+                        : assignedQueueNumber
+                    }
                     onChange={({ target }) => {
-                      process.queueNumber = +target.value;
+                      process.assignedQueueNumber = +target.value;
                       setProcesses(
                         processes.map((e, i) => (i === index ? process : e))
                       );
                     }}
-                    label="Queue Number"
+                    label="Assigned Queue Number"
                   >
                     {mlqAlgorithms.slice(0, mlqAlgorithmsQty).map((_, i) => (
                       <MenuItem value={i}>{`Queue #0${i + 1}`}</MenuItem>

@@ -1,5 +1,4 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core/styles";
 import {
   Paper,
   TableBody,
@@ -11,9 +10,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { getAverage } from "../utils";
-const useStyles = makeStyles({ table: { minWidth: 700 } });
 const Step3 = ({ results }) => {
-  const classes = useStyles();
   return (
     <TableContainer component={Paper}>
       <Table>

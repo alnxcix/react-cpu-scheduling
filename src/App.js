@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { cloneDeep } from "lodash";
 import {
   Button,
+  IconButton,
   makeStyles,
   Paper,
+  Snackbar,
   StepLabel,
   Stepper,
   Step,
   Typography,
 } from "@material-ui/core";
+import { Close } from "@material-ui/icons";
 import Header from "./components/Header";
 import Step1 from "./components/Step1";
 import Step2 from "./components/Step2";
@@ -48,16 +51,106 @@ const App = () => {
   }));
   const defaultProcesses = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((element) => ({
     pid: `P${element + 1}`,
-    queueNumber: 0,
+    assignedQueueNumber: 0,
   }));
   const classes = useStyles();
   const [activeStep, setActiveStep] = useState(0);
   const [algorithm, setAlgorithm] = useState(defaultAlgorithm);
   const [mlqAlgorithms, setMlqAlgorithms] = useState(defaultMlqAlgorithms);
   const [mlqAlgorithmsQty, setMlqAlgorithmsQty] = useState(2);
+  const [open, setOpen] = useState(false);
   const [processesQty, setProcessesQty] = useState(2);
   const [processes, setProcesses] = useState(defaultProcesses);
-  const handleNext = () => setActiveStep(activeStep + 1);
+  // const handleNext = () => setActiveStep(activeStep + 1);
+  const handleNext = () => {
+    switch (activeStep) {
+      case 0:
+        if (
+          algorithm === "MLQ" &&
+          mlqAlgorithms.filter(
+            (element) =>
+              element.mode === "RR" && element.timeQuantum === undefined
+          ).length > 0
+        )
+          setOpen(true);
+        else setActiveStep(activeStep + 1);
+        break;
+      case 1:
+        if (
+          (algorithm === "FCFS" || algorithm === "SJF") &&
+          processes
+            .slice(0, processesQty)
+            .filter(
+              (element) =>
+                element.arrivalTime === undefined ||
+                element.burstTime === undefined
+            ).length > 0
+        )
+          setOpen(true);
+        else if (
+          algorithm === "PRIO" &&
+          processes
+            .slice(0, processesQty)
+            .filter(
+              (element) =>
+                element.arrivalTime === undefined ||
+                element.burstTime === undefined ||
+                element.priorityNumber === undefined
+            ).length > 0
+        )
+          setOpen(true);
+        else if (
+          algorithm === "EDF" &&
+          processes
+            .slice(0, processesQty)
+            .filter(
+              (element) =>
+                element.capacity === undefined ||
+                element.deadline === undefined ||
+                element.period === undefined
+            ).length > 0
+        )
+          setOpen(true);
+        else if (algorithm === "MLQ") {
+          if (
+            processes
+              .slice(0, processesQty)
+              .filter(
+                (element) =>
+                  (mlqAlgorithms[element.assignedQueueNumber].mode === "FCFS" ||
+                    mlqAlgorithms[element.assignedQueueNumber].mode === "SJF" ||
+                    mlqAlgorithms[element.assignedQueueNumber].mode ===
+                      "SRTF" ||
+                    mlqAlgorithms[element.assignedQueueNumber].mode === "RR") &&
+                  (element.arrivalTime === undefined ||
+                    element.burstTime === undefined ||
+                    element.assignedQueueNumber === undefined)
+              ).length > 0
+          )
+            setOpen(true);
+          else if (
+            processes
+              .slice(0, processesQty)
+              .filter(
+                (element) =>
+                  (mlqAlgorithms[element.assignedQueueNumber].mode === "PRIO" ||
+                    mlqAlgorithms[element.assignedQueueNumber].mode ===
+                      "P-PRIO") &&
+                  (element.arrivalTime === undefined ||
+                    element.burstTime === undefined ||
+                    element.priorityNumber === undefined ||
+                    element.assignedQueueNumber === undefined)
+              ).length > 0
+          )
+            setOpen(true);
+          else setActiveStep(activeStep + 1);
+        } else setActiveStep(activeStep + 1);
+        break;
+      default:
+        setActiveStep(activeStep + 1);
+        break;
+    }
+  };
   const handleBack = () => setActiveStep(activeStep - 1);
   const handleRestart = (event) => {
     event.preventDefault();
@@ -67,6 +160,10 @@ const App = () => {
     setMlqAlgorithmsQty(2);
     setProcesses(defaultProcesses);
     setProcessesQty(2);
+  };
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") return;
+    setOpen(false);
   };
   const getStepContent = (step) => {
     switch (step) {
@@ -152,6 +249,26 @@ const App = () => {
         </Paper>
         <Footer />
       </main>
+      <Snackbar
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        message="Fill up all required fields."
+        action={
+          <IconButton
+            size="small"
+            aria-label="close"
+            color="inherit"
+            onClick={handleClose}
+          >
+            <Close fontSize="small" />
+          </IconButton>
+        }
+      />
     </>
   );
 };
