@@ -16,5 +16,7 @@ export const getLCM = (numbers) => {
 };
 
 export const getAverage = (numbers) =>
-  numbers.reduce((accumulator, currentValue) => accumulator + currentValue) /
-  numbers.length;
+  (
+    numbers.reduce((accumulator, currentValue) => accumulator + currentValue) /
+    numbers.length
+  ).toFixed(2);
