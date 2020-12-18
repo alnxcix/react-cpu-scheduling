@@ -172,13 +172,14 @@ export const MLQ = (processes, mlqs) => {
         runningProcess.burstLeft -= 1;
         if (runningProcess.burstLeft === 0) {
           runningProcess.completionTime = time + 1;
+          runningProcess.turnAroundTime =
+            runningProcess.completionTime - runningProcess.arrivalTime;
+          runningProcess.waitingTime =
+            runningProcess.turnAroundTime - runningProcess.burstTime;
           runningProcess.isDone = true;
           runningProcess = () => {
             return;
           };
-          // modify code below . . .
-
-          // modify code above . . .
         } else runningProcess.timeOfNextEnqueue = time + 1;
       } else if (activeAlgorithm.mode === "SJF") {
         let q = queue.sort((a, b) =>
@@ -208,13 +209,14 @@ export const MLQ = (processes, mlqs) => {
         runningProcess.burstLeft -= 1;
         if (runningProcess.burstLeft === 0) {
           runningProcess.completionTime = time + 1;
+          runningProcess.turnAroundTime =
+            runningProcess.completionTime - runningProcess.arrivalTime;
+          runningProcess.waitingTime =
+            runningProcess.turnAroundTime - runningProcess.burstTime;
           runningProcess.isDone = true;
           runningProcess = () => {
             return;
           };
-          // modify code below . . .
-
-          // modify code above . . .
         } else runningProcess.timeOfNextEnqueue = time + 1;
       } else if (activeAlgorithm.mode === "SRTF") {
         let q = queue.sort((a, b) =>
@@ -238,13 +240,14 @@ export const MLQ = (processes, mlqs) => {
         runningProcess.burstLeft -= 1;
         if (runningProcess.burstLeft === 0) {
           runningProcess.completionTime = time + 1;
+          runningProcess.turnAroundTime =
+            runningProcess.completionTime - runningProcess.arrivalTime;
+          runningProcess.waitingTime =
+            runningProcess.turnAroundTime - runningProcess.burstTime;
           runningProcess.isDone = true;
           runningProcess = () => {
             return;
           };
-          // modify code below . . .
-
-          // modify code above . . .
         } else runningProcess.timeOfNextEnqueue = time + 1;
       } else if (activeAlgorithm.mode === "PRIO") {
         let q = queue.sort((a, b) =>
@@ -274,13 +277,14 @@ export const MLQ = (processes, mlqs) => {
         runningProcess.burstLeft -= 1;
         if (runningProcess.burstLeft === 0) {
           runningProcess.completionTime = time + 1;
+          runningProcess.turnAroundTime =
+            runningProcess.completionTime - runningProcess.arrivalTime;
+          runningProcess.waitingTime =
+            runningProcess.turnAroundTime - runningProcess.burstTime;
           runningProcess.isDone = true;
           runningProcess = () => {
             return;
           };
-          // modify code below . . .
-
-          // modify code above . . .
         } else runningProcess.timeOfNextEnqueue = time + 1;
       } else if (activeAlgorithm.mode === "P-PRIO") {
         let q = queue.sort((a, b) =>
@@ -331,13 +335,14 @@ export const MLQ = (processes, mlqs) => {
         runningProcess.quantumTimeLeft -= 1;
         if (runningProcess.burstLeft === 0) {
           runningProcess.completionTime = time + 1;
+          runningProcess.turnAroundTime =
+            runningProcess.completionTime - runningProcess.arrivalTime;
+          runningProcess.waitingTime =
+            runningProcess.turnAroundTime - runningProcess.burstTime;
           runningProcess.isDone = true;
           runningProcess = () => {
             return;
           };
-          // modify code below . . .
-
-          // modify code above . . .
         } else if (runningProcess.quantumTimeLeft === 0) {
           runningProcess.quantumTimeLeft = activeAlgorithm.timeQuantum;
           runningProcess.timeOfNextEnqueue = time + 1;

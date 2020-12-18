@@ -123,7 +123,7 @@ const App = () => {
                     mlqAlgorithms[element.assignedQueueNumber].mode === "RR") &&
                   (element.arrivalTime === undefined ||
                     element.burstTime === undefined ||
-                    element.assignedQueueNumber === undefined)
+                    element.assignedQueueNumber >= mlqAlgorithmsQty)
               ).length > 0
           )
             setOpen(true);
@@ -138,7 +138,7 @@ const App = () => {
                   (element.arrivalTime === undefined ||
                     element.burstTime === undefined ||
                     element.priorityNumber === undefined ||
-                    element.assignedQueueNumber === undefined)
+                    element.assignedQueueNumber >= mlqAlgorithmsQty)
               ).length > 0
           )
             setOpen(true);
