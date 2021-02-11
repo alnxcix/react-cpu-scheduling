@@ -1,90 +1,5 @@
 import { getLCM } from "./utils";
 
-export const FCFS = (processes) =>
-  processes
-    .sort((a, b) =>
-      a.arrivalTime < b.arrivalTime ? -1 : a.arrivalTime > b.arrivalTime ? 1 : 0
-    )
-    .map((element, index, array) => {
-      element.startingTime = index =
-        index !== 0 && element.arrivalTime <= array[index - 1].completionTime
-          ? array[index - 1].completionTime
-          : element.arrivalTime;
-      element.completionTime = element.startingTime + element.burstTime;
-      element.turnAroundTime = element.completionTime - element.arrivalTime;
-      element.waitingTime = element.turnAroundTime - element.burstTime;
-      return element;
-    })
-    .sort((a, b) => (a.pid < b.pid ? -1 : a.pid > b.pid ? 1 : 0));
-
-export const SJF = (processes) => {
-  let time = 0;
-  while (
-    processes.filter((element) => element.isDone === undefined).length > 0
-  ) {
-    let queue = processes.filter(
-      (element) => element.arrivalTime <= time && element.isDone === undefined
-    );
-    if (queue.length > 0) {
-      let currentProcess = queue.sort((a, b) =>
-        a.burstTime < b.burstTime
-          ? -1
-          : a.burstTime > b.burstTime
-          ? 1
-          : a.arrivalTime < b.arrivalTime
-          ? -1
-          : a.arrivalTime > b.arrivalTime
-          ? 1
-          : 0
-      )[0];
-      currentProcess.startingTime = time;
-      currentProcess.completionTime =
-        currentProcess.startingTime + currentProcess.burstTime;
-      currentProcess.turnAroundTime =
-        currentProcess.completionTime - currentProcess.arrivalTime;
-      currentProcess.waitingTime =
-        currentProcess.turnAroundTime - currentProcess.burstTime;
-      currentProcess.isDone = true;
-      time = currentProcess.completionTime;
-    } else time++;
-  }
-  return processes;
-};
-
-export const PRIO = (processes) => {
-  let time = 0;
-  while (
-    processes.filter((element) => element.isDone === undefined).length > 0
-  ) {
-    let queue = processes.filter(
-      (element) => element.arrivalTime <= time && element.isDone === undefined
-    );
-    if (queue.length > 0) {
-      let currentProcess = queue.sort((a, b) =>
-        a.priorityNumber < b.priorityNumber
-          ? -1
-          : a.priorityNumber > b.priorityNumber
-          ? 1
-          : a.arrivalTime < b.arrivalTime
-          ? -1
-          : a.arrivalTime > b.arrivalTime
-          ? 1
-          : 0
-      )[0];
-      currentProcess.startingTime = time;
-      currentProcess.completionTime =
-        currentProcess.startingTime + currentProcess.burstTime;
-      currentProcess.turnAroundTime =
-        currentProcess.completionTime - currentProcess.arrivalTime;
-      currentProcess.waitingTime =
-        currentProcess.turnAroundTime - currentProcess.burstTime;
-      currentProcess.isDone = true;
-      time = currentProcess.completionTime;
-    } else time++;
-  }
-  return processes;
-};
-
 export const EDF = (processes) => {
   let lcm = getLCM(processes.map(({ period }) => period));
   processes.map((element) => {
@@ -95,10 +10,10 @@ export const EDF = (processes) => {
   });
   for (let time = 0; time < lcm; time++) {
     let queue = processes.filter(
-      (element) =>
-        element.remainingCapacity > 0 &&
-        element.currentPeriod <= time &&
-        element.currentDeadline >= time
+      ({ currentDeadline, currentPeriod, remainingCapacity }) =>
+        currentDeadline >= time &&
+        currentPeriod <= time &&
+        remainingCapacity > 0
     );
     if (queue.length > 0) {
       let currentProcess = queue.sort((a, b) =>
@@ -127,6 +42,165 @@ export const EDF = (processes) => {
   return processes;
 };
 
+export const FCFS = (processes) =>
+  processes
+    .sort((a, b) =>
+      a.arrivalTime < b.arrivalTime ? -1 : a.arrivalTime > b.arrivalTime ? 1 : 0
+    )
+    .map((element, index, array) => {
+      element.startingTime = index =
+        index > 0 && element.arrivalTime < array[index - 1].completionTime
+          ? array[index - 1].completionTime
+          : element.arrivalTime;
+      element.completionTime = element.startingTime + element.burstTime;
+      element.turnAroundTime = element.completionTime - element.arrivalTime;
+      element.waitingTime = element.turnAroundTime - element.burstTime;
+      return element;
+    })
+    .sort((a, b) => (a.pid < b.pid ? -1 : a.pid > b.pid ? 1 : 0));
+
+export const PPRIO = (processes) => {
+  for (
+    let time = 0;
+    processes.filter(({ remainingBurstTime }) => remainingBurstTime > 0)
+      .length > 0;
+    time++
+  ) {
+    let queue = processes.filter(
+      ({ arrivalTime, remainingBurstTime }) =>
+        arrivalTime <= time && remainingBurstTime > 0
+    );
+    if (queue.length > 0) {
+      let process = queue.sort((a, b) =>
+        a.priorityNumber < b.priorityNumber
+          ? -1
+          : a.priorityNumber > b.priorityNumber
+          ? 1
+          : a.arrivalTime < b.arrivalTime
+          ? -1
+          : a.arrivalTime > b.arrivalTime
+          ? 1
+          : 0
+      )[0];
+      if (process.startingTime === undefined) process.startingTime = time;
+      process.completionTime = time + 1;
+      process.turnAroundTime = process.completionTime - process.arrivalTime;
+      process.waitingTime = process.turnAroundTime - process.burstTime;
+      process.responseTime = process.startingTime - process.arrivalTime;
+      process.remainingBurstTime -= 1;
+    }
+  }
+  return processes;
+};
+
+export const PRIO = (processes) => {
+  let time = 0;
+  while (processes.filter(({ isDone }) => isDone === undefined).length > 0) {
+    let queue = processes.filter(
+      ({ arrivalTime, isDone }) => arrivalTime <= time && isDone === undefined
+    );
+    if (queue.length > 0) {
+      let currentProcess = queue.sort((a, b) =>
+        a.priorityNumber < b.priorityNumber
+          ? -1
+          : a.priorityNumber > b.priorityNumber
+          ? 1
+          : a.arrivalTime < b.arrivalTime
+          ? -1
+          : a.arrivalTime > b.arrivalTime
+          ? 1
+          : 0
+      )[0];
+      currentProcess.startingTime = time;
+      currentProcess.completionTime =
+        currentProcess.startingTime + currentProcess.burstTime;
+      currentProcess.turnAroundTime =
+        currentProcess.completionTime - currentProcess.arrivalTime;
+      currentProcess.waitingTime =
+        currentProcess.turnAroundTime - currentProcess.burstTime;
+      currentProcess.isDone = true;
+      time = currentProcess.completionTime;
+    } else time++;
+  }
+  return processes;
+};
+
+export const SJF = (processes) => {
+  let time = 0;
+  while (processes.filter(({ isDone }) => isDone === undefined).length > 0) {
+    let queue = processes.filter(
+      ({ arrivalTime, isDone }) => arrivalTime <= time && isDone === undefined
+    );
+    if (queue.length > 0) {
+      let currentProcess = queue.sort((a, b) =>
+        a.burstTime < b.burstTime
+          ? -1
+          : a.burstTime > b.burstTime
+          ? 1
+          : a.arrivalTime < b.arrivalTime
+          ? -1
+          : a.arrivalTime > b.arrivalTime
+          ? 1
+          : 0
+      )[0];
+      currentProcess.startingTime = time;
+      currentProcess.completionTime =
+        currentProcess.startingTime + currentProcess.burstTime;
+      currentProcess.turnAroundTime =
+        currentProcess.completionTime - currentProcess.arrivalTime;
+      currentProcess.waitingTime =
+        currentProcess.turnAroundTime - currentProcess.burstTime;
+      currentProcess.isDone = true;
+      time = currentProcess.completionTime;
+    } else time++;
+  }
+  return processes;
+};
+
+export const SRTF = (processes) => {
+  processes.map(({ burstTime, remainingBurstTime }) => {
+    remainingBurstTime = burstTime;
+    return element;
+  });
+  for (
+    let time = 0;
+    processes.filter(({ remainingBurstTime }) => remainingBurstTime > 0)
+      .length > 0;
+    time++
+  ) {
+    let queue = processes.filter(
+      ({ arrivalTime, remainingBurstTime }) =>
+        arrivalTime <= time && remainingBurstTime > 0
+    );
+    if (queue.length > 0) {
+      let process = processes
+        .filter(
+          ({ arrivalTime, remainingBurstTime }) =>
+            arrivalTime <= time && remainingBurstTime > 0
+        )
+        .sort((a, b) =>
+          a.remainingBurstTime < b.remainingBurstTime
+            ? -1
+            : a.remainingBurstTime > b.remainingBurstTime
+            ? 1
+            : a.arrivalTime < b.arrivalTime
+            ? -1
+            : a.arrivalTime > b.arrivalTime
+            ? 1
+            : 0
+        )[0];
+      if (process.startingTime === undefined) process.startingTime = time;
+      process.completionTime = time + 1;
+      process.turnAroundTime = process.completionTime - process.arrivalTime;
+      process.waitingTime = process.turnAroundTime - process.burstTime;
+      process.responseTime = process.startingTime - process.arrivalTime;
+      process.remainingBurstTime -= 1;
+    }
+  }
+  return arr;
+};
+
+// this code still kinda sus
 export const MLQ = (processes, mlqs) => {
   let runningProcess;
   processes.map((element) => {

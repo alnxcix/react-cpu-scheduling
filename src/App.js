@@ -17,7 +17,7 @@ import Step1 from "./components/Step1";
 import Step2 from "./components/Step2";
 import Step3 from "./components/Step3";
 import Footer from "./components/Footer";
-import { FCFS, SJF, PRIO, EDF, MLQ } from "./algorithms";
+import { EDF, FCFS, SJF, SRTF, PPRIO, PRIO } from "./algorithms";
 const useStyles = makeStyles((theme) => ({
   layout: {
     width: "auto",
@@ -43,106 +43,49 @@ const useStyles = makeStyles((theme) => ({
   buttons: { display: "flex", justifyContent: "flex-end" },
   button: { marginTop: theme.spacing(3), marginLeft: theme.spacing(1) },
 }));
-const steps = ["Select algorithm", "Setup processes", "View results"];
 const App = () => {
-  const defaultAlgorithm = "FCFS";
-  const defaultMlqAlgorithms = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(() => ({
-    mode: defaultAlgorithm,
-  }));
+  const classes = useStyles();
   const defaultProcesses = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((element) => ({
     pid: `P${element + 1}`,
-    assignedQueueNumber: 0,
   }));
-  const classes = useStyles();
+  const steps = ["Select algorithm", "Setup processes", "View results"];
   const [activeStep, setActiveStep] = useState(0);
-  const [algorithm, setAlgorithm] = useState(defaultAlgorithm);
-  const [mlqAlgorithms, setMlqAlgorithms] = useState(defaultMlqAlgorithms);
-  const [mlqAlgorithmsQty, setMlqAlgorithmsQty] = useState(2);
+  const [algorithm, setAlgorithm] = useState();
   const [open, setOpen] = useState(false);
-  const [processesQty, setProcessesQty] = useState(2);
   const [processes, setProcesses] = useState(defaultProcesses);
+  const [processesQty, setProcessesQty] = useState(2);
+  const [snackbarMessage, setSnackbarMessage] = useState();
+  const [timeQuantum, setTimeQuantum] = useState();
+  const handleBack = () => setActiveStep(activeStep - 1);
+  const handleClose = (_, reason) => {
+    if (reason === "clickaway") return;
+    setOpen(false);
+  };
   const handleNext = () => {
     switch (activeStep) {
       case 0:
         if (
-          algorithm === "MLQ" &&
-          mlqAlgorithms.filter(
-            (element) =>
-              element.mode === "RR" && element.timeQuantum === undefined
-          ).length > 0
-        )
+          algorithm === undefined ||
+          ((algorithm === "RR" || algorithm === "RRO") &&
+            timeQuantum === undefined)
+        ) {
+          setSnackbarMessage("Select an algorithm first.");
           setOpen(true);
-        else setActiveStep(activeStep + 1);
+        } else setActiveStep(activeStep + 1);
         break;
       case 1:
         if (
-          (algorithm === "FCFS" || algorithm === "SJF") &&
-          processes
-            .slice(0, processesQty)
-            .filter(
-              (element) =>
-                element.arrivalTime === undefined ||
-                element.burstTime === undefined
-            ).length > 0
-        )
+          processes.filter(
+            (element) =>
+              element.arrivalTime === undefined &&
+              element.burstTime === undefined
+          ).length > 0 ||
+          ((algorithm === "PRIO" || algorithm === "P-PRIO") &&
+            processes.filter((element) => element.priorityNumber === undefined)
+              .length > 0)
+        ) {
+          setSnackbarMessage("Fill up all required fields.");
           setOpen(true);
-        else if (
-          algorithm === "PRIO" &&
-          processes
-            .slice(0, processesQty)
-            .filter(
-              (element) =>
-                element.arrivalTime === undefined ||
-                element.burstTime === undefined ||
-                element.priorityNumber === undefined
-            ).length > 0
-        )
-          setOpen(true);
-        else if (
-          algorithm === "EDF" &&
-          processes
-            .slice(0, processesQty)
-            .filter(
-              (element) =>
-                element.capacity === undefined ||
-                element.deadline === undefined ||
-                element.period === undefined
-            ).length > 0
-        )
-          setOpen(true);
-        else if (algorithm === "MLQ") {
-          if (
-            processes
-              .slice(0, processesQty)
-              .filter(
-                (element) =>
-                  (mlqAlgorithms[element.assignedQueueNumber].mode === "FCFS" ||
-                    mlqAlgorithms[element.assignedQueueNumber].mode === "SJF" ||
-                    mlqAlgorithms[element.assignedQueueNumber].mode ===
-                      "SRTF" ||
-                    mlqAlgorithms[element.assignedQueueNumber].mode === "RR") &&
-                  (element.arrivalTime === undefined ||
-                    element.burstTime === undefined ||
-                    element.assignedQueueNumber >= mlqAlgorithmsQty)
-              ).length > 0
-          )
-            setOpen(true);
-          else if (
-            processes
-              .slice(0, processesQty)
-              .filter(
-                (element) =>
-                  (mlqAlgorithms[element.assignedQueueNumber].mode === "PRIO" ||
-                    mlqAlgorithms[element.assignedQueueNumber].mode ===
-                      "P-PRIO") &&
-                  (element.arrivalTime === undefined ||
-                    element.burstTime === undefined ||
-                    element.priorityNumber === undefined ||
-                    element.assignedQueueNumber >= mlqAlgorithmsQty)
-              ).length > 0
-          )
-            setOpen(true);
-          else setActiveStep(activeStep + 1);
         } else setActiveStep(activeStep + 1);
         break;
       default:
@@ -150,65 +93,13 @@ const App = () => {
         break;
     }
   };
-  const handleBack = () => setActiveStep(activeStep - 1);
   const handleRestart = (event) => {
     event.preventDefault();
     setActiveStep(0);
-    setAlgorithm(defaultAlgorithm);
-    setMlqAlgorithms(defaultMlqAlgorithms);
-    setMlqAlgorithmsQty(2);
+    setAlgorithm();
     setProcesses(defaultProcesses);
     setProcessesQty(2);
-  };
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") return;
-    setOpen(false);
-  };
-  const getStepContent = (step) => {
-    switch (step) {
-      case 0:
-        return (
-          <Step1
-            algorithm={algorithm}
-            mlqAlgorithms={mlqAlgorithms}
-            mlqAlgorithmsQty={mlqAlgorithmsQty}
-            setAlgorithm={setAlgorithm}
-            setMlqAlgorithms={setMlqAlgorithms}
-            setMlqAlgorithmsQty={setMlqAlgorithmsQty}
-          />
-        );
-      case 1:
-        return (
-          <Step2
-            algorithm={algorithm}
-            mlqAlgorithms={mlqAlgorithms}
-            mlqAlgorithmsQty={mlqAlgorithmsQty}
-            processes={processes}
-            processesQty={processesQty}
-            setProcesses={setProcesses}
-            setProcessesQty={setProcessesQty}
-          />
-        );
-      default:
-        return (
-          <Step3
-            results={
-              algorithm === "FCFS"
-                ? FCFS(cloneDeep(processes.slice(0, processesQty)))
-                : algorithm === "SJF"
-                ? SJF(cloneDeep(processes.slice(0, processesQty)))
-                : algorithm === "PRIO"
-                ? PRIO(cloneDeep(processes.slice(0, processesQty)))
-                : algorithm === "EDF"
-                ? EDF(cloneDeep(processes.slice(0, processesQty)))
-                : MLQ(
-                    cloneDeep(processes.slice(0, processesQty)),
-                    cloneDeep(mlqAlgorithms).slice(0, mlqAlgorithmsQty)
-                  )
-            }
-          />
-        );
-    }
+    setTimeQuantum();
   };
   return (
     <>
@@ -226,7 +117,38 @@ const App = () => {
             ))}
           </Stepper>
           <>
-            {getStepContent(activeStep)}
+            {(() =>
+              activeStep === 0 ? (
+                <Step1
+                  algorithm={algorithm}
+                  setAlgorithm={setAlgorithm}
+                  timeQuantum={timeQuantum}
+                />
+              ) : activeStep === 1 ? (
+                <Step2
+                  algorithm={algorithm}
+                  processes={processes}
+                  processesQty={processesQty}
+                  setProcesses={setProcesses}
+                  setProcessesQty={setProcessesQty}
+                />
+              ) : (
+                <Step3
+                  results={
+                    algorithm === "EDF"
+                      ? EDF(cloneDeep(processes.slice(0, processesQty)))
+                      : algorithm === "FCFS"
+                      ? FCFS(cloneDeep(processes.slice(0, processesQty)))
+                      : algorithm === "P-PRIO"
+                      ? PPRIO(cloneDeep(processes.slice(0, processesQty)))
+                      : algorithm === "PRIO"
+                      ? PRIO(cloneDeep(processes.slice(0, processesQty)))
+                      : algorithm === "SJF"
+                      ? SJF(cloneDeep(processes.slice(0, processesQty)))
+                      : SRTF(cloneDeep(processes.slice(0, processesQty)))
+                  }
+                />
+              ))()}
             <div className={classes.buttons}>
               {activeStep !== 0 && (
                 <Button onClick={handleBack} className={classes.button}>
@@ -256,7 +178,7 @@ const App = () => {
         open={open}
         autoHideDuration={6000}
         onClose={handleClose}
-        message="Fill up all required fields."
+        message={snackbarMessage}
         action={
           <IconButton
             size="small"

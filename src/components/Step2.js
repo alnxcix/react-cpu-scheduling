@@ -1,22 +1,6 @@
 import React from "react";
-import {
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-} from "@material-ui/core";
-import CustomSlider from "./CustomSlider";
-const FormRow = ({
-  algorithm,
-  index,
-  mlqAlgorithms,
-  mlqAlgorithmsQty,
-  process,
-  processes,
-  setProcesses,
-}) => {
+import { Grid, Slider, TextField, Typography } from "@material-ui/core";
+const FormRow = ({ algorithm, index, process, processes, setProcesses }) => {
   let {
     arrivalTime,
     burstTime,
@@ -25,7 +9,6 @@ const FormRow = ({
     period,
     pid,
     priorityNumber,
-    assignedQueueNumber,
   } = process;
   return (
     <Grid item xs={12}>
@@ -67,75 +50,28 @@ const FormRow = ({
         </Grid>
         {(() => {
           if (
-            algorithm === "PRIO" ||
             algorithm === "EDF" ||
-            (algorithm === "MLQ" &&
-              mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
+            algorithm === "PRIO" ||
+            algorithm === "P-PRIO"
           )
             return (
               <Grid item xs>
                 <TextField
                   fullWidth
-                  label={
-                    algorithm === "PRIO" ||
-                    (algorithm === "MLQ" &&
-                      mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
-                      ? "Priority"
-                      : "Period"
-                  }
+                  label={algorithm === "EDF" ? "Period" : "Priority Number"}
                   onChange={({ target }) => {
-                    if (
-                      algorithm === "PRIO" ||
-                      (algorithm === "MLQ" &&
-                        mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
-                    )
-                      process.priorityNumber = +target.value;
-                    else process.period = +target.value;
+                    if (algorithm === "EDF") process.period = +target.value;
+                    else process.priorityNumber = +target.value;
                     setProcesses(
                       processes.map((p, i) => (i === index ? process : p))
                     );
                   }}
                   type="number"
-                  value={
-                    algorithm === "PRIO" ||
-                    (algorithm === "MLQ" &&
-                      mlqAlgorithms[assignedQueueNumber].mode === "PRIO")
-                      ? priorityNumber
-                      : period
-                  }
+                  value={algorithm === "EDF" ? period : priorityNumber}
                   variant="outlined"
                 />
               </Grid>
             );
-        })()}
-        {(() => {
-          if (algorithm === "MLQ") {
-            return (
-              <Grid item xs>
-                <FormControl fullWidth variant="outlined">
-                  <InputLabel>Assigned Queue Number</InputLabel>
-                  <Select
-                    value={
-                      assignedQueueNumber >= mlqAlgorithmsQty
-                        ? null
-                        : assignedQueueNumber
-                    }
-                    onChange={({ target }) => {
-                      process.assignedQueueNumber = +target.value;
-                      setProcesses(
-                        processes.map((e, i) => (i === index ? process : e))
-                      );
-                    }}
-                    label="Assigned Queue Number"
-                  >
-                    {mlqAlgorithms.slice(0, mlqAlgorithmsQty).map((_, i) => (
-                      <MenuItem value={i}>{`Queue #0${i + 1}`}</MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            );
-          }
         })()}
       </Grid>
     </Grid>
@@ -143,26 +79,35 @@ const FormRow = ({
 };
 const Step2 = ({
   algorithm,
-  mlqAlgorithms,
-  mlqAlgorithmsQty,
   processes,
   processesQty,
   setProcesses,
   setProcessesQty,
 }) => (
   <>
-    <CustomSlider
-      label="Number of processes"
-      setter={setProcessesQty}
-      value={processesQty}
-    />
+    <Grid container spacing={3}>
+      <Grid item xs={4}>
+        <Typography align="center" gutterBottom>
+          Number of processes
+        </Typography>
+      </Grid>
+      <Grid item xs>
+        <Slider
+          marks
+          max={9}
+          min={2}
+          onChange={(_, value) => setProcessesQty(value)}
+          step={1}
+          value={processesQty}
+          valueLabelDisplay="auto"
+        />
+      </Grid>
+    </Grid>
     <Grid container spacing={3}>
       {processes.slice(0, processesQty).map((element, index) => (
         <FormRow
           algorithm={algorithm}
           index={index}
-          mlqAlgorithms={mlqAlgorithms}
-          mlqAlgorithmsQty={mlqAlgorithmsQty}
           process={element}
           processes={processes}
           setProcesses={setProcesses}
