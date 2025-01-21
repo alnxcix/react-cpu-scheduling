@@ -73,6 +73,7 @@ export const PPRIO = (processes) => {
   while (completed < n) {
     // Select the process with the highest priority at the current time
     let currentProcess = null;
+    // eslint-disable-next-line
     processes.forEach((process) => {
       if (
         process.arrivalTime <= time &&
@@ -126,6 +127,7 @@ export const PRIO = (processes) => {
   let time = 0;
   while (processes.filter(({ isDone }) => isDone === undefined).length > 0) {
     let queue = processes.filter(
+      // eslint-disable-next-line
       ({ arrivalTime, isDone }) => arrivalTime <= time && isDone === undefined
     );
     if (queue.length > 0) {
@@ -158,6 +160,7 @@ export const SJF = (processes) => {
   let time = 0;
   while (processes.filter(({ isDone }) => isDone === undefined).length > 0) {
     let queue = processes.filter(
+      // eslint-disable-next-line
       ({ arrivalTime, isDone }) => arrivalTime <= time && isDone === undefined
     );
     if (queue.length > 0) {
