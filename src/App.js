@@ -75,13 +75,27 @@ const App = () => {
         break;
       case 1:
         if (
-          processes.filter(
-            (element) =>
-              element.arrivalTime === undefined &&
-              element.burstTime === undefined
-          ).length > 0 ||
+          (algorithm === "EDF" &&
+            processes
+              .slice(0, processesQty)
+              .filter(
+                (element) =>
+                  element.capacity === undefined ||
+                  element.deadline === undefined ||
+                  element.period === undefined
+              ).length > 0) ||
+          (["FCFS", "SJF", "SRTF"].includes(algorithm) &&
+            processes
+              .slice(0, processesQty)
+              .filter(
+                (element) =>
+                  element.arrivalTime === undefined &&
+                  element.burstTime === undefined
+              ).length > 0) ||
           ((algorithm === "PRIO" || algorithm === "P-PRIO") &&
-            processes.filter((element) => element.priorityNumber === undefined)
+            processes
+              .slice(0, processesQty)
+              .filter((element) => element.priorityNumber === undefined)
               .length > 0)
         ) {
           setSnackbarMessage("Fill up all required fields.");

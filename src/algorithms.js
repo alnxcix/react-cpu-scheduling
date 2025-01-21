@@ -60,37 +60,66 @@ export const FCFS = (processes) =>
     .sort((a, b) => (a.pid < b.pid ? -1 : a.pid > b.pid ? 1 : 0));
 
 export const PPRIO = (processes) => {
-  for (
-    let time = 0;
-    processes.filter(({ remainingBurstTime }) => remainingBurstTime > 0)
-      .length > 0;
-    time++
-  ) {
-    let queue = processes.filter(
-      ({ arrivalTime, remainingBurstTime }) =>
-        arrivalTime <= time && remainingBurstTime > 0
-    );
-    if (queue.length > 0) {
-      let process = queue.sort((a, b) =>
-        a.priorityNumber < b.priorityNumber
-          ? -1
-          : a.priorityNumber > b.priorityNumber
-          ? 1
-          : a.arrivalTime < b.arrivalTime
-          ? -1
-          : a.arrivalTime > b.arrivalTime
-          ? 1
-          : 0
-      )[0];
-      if (process.startingTime === undefined) process.startingTime = time;
-      process.completionTime = time + 1;
-      process.turnAroundTime = process.completionTime - process.arrivalTime;
-      process.waitingTime = process.turnAroundTime - process.burstTime;
-      process.responseTime = process.startingTime - process.arrivalTime;
-      process.remainingBurstTime -= 1;
+  let time = 0;
+  let completed = 0;
+  const n = processes.length;
+
+  // Initialize results
+  processes.forEach((process) => {
+    process.remainingTime = process.burstTime; // Initialize remaining time
+    process.startingTime = -1; // Initialize start time
+  });
+
+  while (completed < n) {
+    // Select the process with the highest priority at the current time
+    let currentProcess = null;
+    processes.forEach((process) => {
+      if (
+        process.arrivalTime <= time &&
+        process.remainingTime > 0 &&
+        (currentProcess === null || process.priority < currentProcess.priority)
+      ) {
+        currentProcess = process;
+      }
+    });
+
+    if (currentProcess) {
+      // Update the start time
+      if (currentProcess.startingTime === -1) {
+        currentProcess.startingTime = time;
+      }
+
+      // Process the task for one unit of time
+      currentProcess.remainingTime -= 1;
+      time++;
+
+      // Check if the process is completed
+      if (currentProcess.remainingTime === 0) {
+        currentProcess.completionTime = time;
+        currentProcess.turnAroundTime =
+          currentProcess.completionTime - currentProcess.arrivalTime;
+        currentProcess.waitingTime =
+          currentProcess.turnAroundTime - currentProcess.burstTime;
+
+        completed++;
+      }
+    } else {
+      // If no process is available, move forward in time
+      time++;
     }
   }
-  return processes;
+
+  // Return the updated processes array
+  return processes.map((process) => ({
+    pid: process.pid,
+    arrivalTime: process.arrivalTime,
+    burstTime: process.burstTime,
+    priority: process.priority,
+    startingTime: process.startingTime,
+    completionTime: process.completionTime,
+    turnAroundTime: process.turnAroundTime,
+    waitingTime: process.waitingTime,
+  }));
 };
 
 export const PRIO = (processes) => {
@@ -158,8 +187,8 @@ export const SJF = (processes) => {
 };
 
 export const SRTF = (processes) => {
-  processes.map(({ burstTime, remainingBurstTime }) => {
-    remainingBurstTime = burstTime;
+  processes.map((element) => {
+    element.remainingBurstTime = element.burstTime;
     return element;
   });
   for (
@@ -197,7 +226,7 @@ export const SRTF = (processes) => {
       process.remainingBurstTime -= 1;
     }
   }
-  return arr;
+  return processes;
 };
 
 // this code still kinda sus
