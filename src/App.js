@@ -66,6 +66,7 @@ const App = () => {
       case 0:
         if (
           algorithm === undefined ||
+          // TODO: RR and RRO to be included in the options yet
           ((algorithm === "RR" || algorithm === "RRO") &&
             timeQuantum === undefined)
         ) {

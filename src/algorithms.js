@@ -417,6 +417,7 @@ export const MLQ = (processes, mlqs) => {
           };
         } else runningProcess.timeOfNextEnqueue = time + 1;
       } else if (activeAlgorithm.mode === "RR") {
+        // TODO: RR to be included in the options
         let electedProcess = queue.sort((a, b) =>
           a.timeOfNextEnqueue < b.timeOfNextEnqueue
             ? -1
@@ -451,6 +452,7 @@ export const MLQ = (processes, mlqs) => {
           runningProcess.timeOfNextEnqueue = time + 1;
         }
       } else if (activeAlgorithm.mode === "RRO") {
+        // TODO: RRO to be included in the options
       }
     }
   }
