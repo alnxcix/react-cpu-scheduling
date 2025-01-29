@@ -1,21 +1,33 @@
 import { getLCM } from "./utils";
 
+// TODO: fix code
 export const EDF = (processes) => {
+  // Calculate LCM of all periods
   let lcm = getLCM(processes.map(({ period }) => period));
+
+  // Initialize process states
   processes.map((element) => {
     element.remainingCapacity = element.capacity;
     element.currentDeadline = element.deadline;
     element.currentPeriod = 0;
+    element.startingTime = undefined;
+    element.completionTime = undefined;
+    element.totalExecutionTime = 0; // Tracks how much time the process executes
+    element.firstReleaseTime = 0; // Tracks the first release time for the process
     return element;
   });
+
   for (let time = 0; time < lcm; time++) {
+    // Filter processes that are eligible to run
     let queue = processes.filter(
       ({ currentDeadline, currentPeriod, remainingCapacity }) =>
         currentDeadline >= time &&
         currentPeriod <= time &&
         remainingCapacity > 0
     );
+
     if (queue.length > 0) {
+      // Sort by earliest deadline, breaking ties by PID
       let currentProcess = queue.sort((a, b) =>
         a.currentDeadline < b.currentDeadline
           ? -1
@@ -23,22 +35,37 @@ export const EDF = (processes) => {
           ? 1
           : a.pid < b.pid
           ? -1
-          : a.pid > b.pid
-          ? 1
-          : 0
+          : 1
       )[0];
+
+      // Record starting time if this is the first execution
       if (currentProcess.startingTime === undefined)
         currentProcess.startingTime = time;
+
+      // Execute the current process for 1 time unit
       currentProcess.remainingCapacity--;
+      currentProcess.totalExecutionTime++;
+
+      // Check if the process has completed its execution
       if (currentProcess.remainingCapacity === 0) {
         currentProcess.currentPeriod += currentProcess.period;
         currentProcess.currentDeadline += currentProcess.period;
         currentProcess.remainingCapacity = currentProcess.capacity;
+
+        // Record completion time if this is the last execution in the hyperperiod
         if (currentProcess.currentDeadline >= lcm)
           currentProcess.completionTime = time + 1;
       }
     }
   }
+
+  // Calculate Turnaround Time (TAT) and Waiting Time (WT) for each process
+  processes.map((process) => {
+    process.turnAroundTime = process.completionTime - process.firstReleaseTime;
+    process.waitingTime = process.turnAroundTime - process.totalExecutionTime;
+    return process;
+  });
+
   return processes;
 };
 
