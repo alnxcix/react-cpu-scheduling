@@ -59,70 +59,6 @@ export const FCFS = (processes) =>
     })
     .sort((a, b) => (a.pid < b.pid ? -1 : a.pid > b.pid ? 1 : 0));
 
-export const PPRIO = (processes) => {
-  let time = 0;
-  let completed = 0;
-  const n = processes.length;
-
-  // Initialize results
-  processes.forEach((process) => {
-    process.remainingTime = process.burstTime; // Initialize remaining time
-    process.startingTime = -1; // Initialize start time
-  });
-
-  while (completed < n) {
-    // Select the process with the highest priority at the current time
-    let currentProcess = null;
-    // eslint-disable-next-line
-    processes.forEach((process) => {
-      if (
-        process.arrivalTime <= time &&
-        process.remainingTime > 0 &&
-        (currentProcess === null || process.priority < currentProcess.priority)
-      ) {
-        currentProcess = process;
-      }
-    });
-
-    if (currentProcess) {
-      // Update the start time
-      if (currentProcess.startingTime === -1) {
-        currentProcess.startingTime = time;
-      }
-
-      // Process the task for one unit of time
-      currentProcess.remainingTime -= 1;
-      time++;
-
-      // Check if the process is completed
-      if (currentProcess.remainingTime === 0) {
-        currentProcess.completionTime = time;
-        currentProcess.turnAroundTime =
-          currentProcess.completionTime - currentProcess.arrivalTime;
-        currentProcess.waitingTime =
-          currentProcess.turnAroundTime - currentProcess.burstTime;
-
-        completed++;
-      }
-    } else {
-      // If no process is available, move forward in time
-      time++;
-    }
-  }
-
-  // Return the updated processes array
-  return processes.map((process) => ({
-    pid: process.pid,
-    arrivalTime: process.arrivalTime,
-    burstTime: process.burstTime,
-    priority: process.priority,
-    startingTime: process.startingTime,
-    completionTime: process.completionTime,
-    turnAroundTime: process.turnAroundTime,
-    waitingTime: process.waitingTime,
-  }));
-};
-
 export const PRIO = (processes) => {
   let time = 0;
   while (processes.filter(({ isDone }) => isDone === undefined).length > 0) {
@@ -189,6 +125,7 @@ export const SJF = (processes) => {
   return processes;
 };
 
+// ** Preemptive - Do not use **
 export const SRTF = (processes) => {
   processes.map((element) => {
     element.remainingBurstTime = element.burstTime;
@@ -232,7 +169,72 @@ export const SRTF = (processes) => {
   return processes;
 };
 
-// this code still kinda sus
+// ** Preemptive - Do not use **
+export const PPRIO = (processes) => {
+  let time = 0;
+  let completed = 0;
+  const n = processes.length;
+
+  // Initialize results
+  processes.forEach((process) => {
+    process.remainingTime = process.burstTime; // Initialize remaining time
+    process.startingTime = -1; // Initialize start time
+  });
+
+  while (completed < n) {
+    // Select the process with the highest priority at the current time
+    let currentProcess = null;
+    // eslint-disable-next-line
+    processes.forEach((process) => {
+      if (
+        process.arrivalTime <= time &&
+        process.remainingTime > 0 &&
+        (currentProcess === null || process.priority < currentProcess.priority)
+      ) {
+        currentProcess = process;
+      }
+    });
+
+    if (currentProcess) {
+      // Update the start time
+      if (currentProcess.startingTime === -1) {
+        currentProcess.startingTime = time;
+      }
+
+      // Process the task for one unit of time
+      currentProcess.remainingTime -= 1;
+      time++;
+
+      // Check if the process is completed
+      if (currentProcess.remainingTime === 0) {
+        currentProcess.completionTime = time;
+        currentProcess.turnAroundTime =
+          currentProcess.completionTime - currentProcess.arrivalTime;
+        currentProcess.waitingTime =
+          currentProcess.turnAroundTime - currentProcess.burstTime;
+
+        completed++;
+      }
+    } else {
+      // If no process is available, move forward in time
+      time++;
+    }
+  }
+
+  // Return the updated processes array
+  return processes.map((process) => ({
+    pid: process.pid,
+    arrivalTime: process.arrivalTime,
+    burstTime: process.burstTime,
+    priority: process.priority,
+    startingTime: process.startingTime,
+    completionTime: process.completionTime,
+    turnAroundTime: process.turnAroundTime,
+    waitingTime: process.waitingTime,
+  }));
+};
+
+// this code still kinda sus - Do not use
 export const MLQ = (processes, mlqs) => {
   let runningProcess;
   processes.map((element) => {

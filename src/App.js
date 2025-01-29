@@ -17,7 +17,7 @@ import Step1 from "./components/Step1";
 import Step2 from "./components/Step2";
 import Step3 from "./components/Step3";
 import Footer from "./components/Footer";
-import { EDF, FCFS, SJF, SRTF, PPRIO, PRIO } from "./algorithms";
+import { EDF, FCFS, SJF, PRIO } from "./algorithms";
 const useStyles = makeStyles((theme) => ({
   layout: {
     width: "auto",
@@ -64,12 +64,7 @@ const App = () => {
   const handleNext = () => {
     switch (activeStep) {
       case 0:
-        if (
-          algorithm === undefined ||
-          // TODO: RR and RRO to be included in the options yet
-          ((algorithm === "RR" || algorithm === "RRO") &&
-            timeQuantum === undefined)
-        ) {
+        if (algorithm === undefined) {
           setSnackbarMessage("Select an algorithm first.");
           setOpen(true);
         } else setActiveStep(activeStep + 1);
@@ -85,7 +80,7 @@ const App = () => {
                   element.deadline === undefined ||
                   element.period === undefined
               ).length > 0) ||
-          (["FCFS", "SJF", "SRTF"].includes(algorithm) &&
+          (["FCFS", "SJF"].includes(algorithm) &&
             processes
               .slice(0, processesQty)
               .filter(
@@ -93,7 +88,7 @@ const App = () => {
                   element.arrivalTime === undefined &&
                   element.burstTime === undefined
               ).length > 0) ||
-          ((algorithm === "PRIO" || algorithm === "P-PRIO") &&
+          (algorithm === "PRIO" &&
             processes
               .slice(0, processesQty)
               .filter((element) => element.priorityNumber === undefined)
@@ -154,13 +149,12 @@ const App = () => {
                       ? EDF(cloneDeep(processes.slice(0, processesQty)))
                       : algorithm === "FCFS"
                       ? FCFS(cloneDeep(processes.slice(0, processesQty)))
-                      : algorithm === "P-PRIO"
-                      ? PPRIO(cloneDeep(processes.slice(0, processesQty)))
                       : algorithm === "PRIO"
                       ? PRIO(cloneDeep(processes.slice(0, processesQty)))
                       : algorithm === "SJF"
                       ? SJF(cloneDeep(processes.slice(0, processesQty)))
-                      : SRTF(cloneDeep(processes.slice(0, processesQty)))
+                      : // Fallback
+                        cloneDeep(processes.slice(0, processesQty))
                   }
                 />
               ))()}

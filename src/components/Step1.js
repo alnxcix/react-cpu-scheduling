@@ -18,10 +18,8 @@ const Step1 = ({ algorithm, setAlgorithm }) => (
         >
           <MenuItem value="EDF">Earliest Deadline First</MenuItem>
           <MenuItem value="FCFS">First-Come First-Serve</MenuItem>
-          <MenuItem value="P-PRIO">Preemptive Priority</MenuItem>
           <MenuItem value="PRIO">Priority</MenuItem>
           <MenuItem value="SJF">Shortest Job First</MenuItem>
-          <MenuItem value="SRTF">Shortest Remaining Time First</MenuItem>
         </Select>
       </FormControl>
     </Grid>

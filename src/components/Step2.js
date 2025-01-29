@@ -49,11 +49,7 @@ const FormRow = ({ algorithm, index, process, processes, setProcesses }) => {
           />
         </Grid>
         {(() => {
-          if (
-            algorithm === "EDF" ||
-            algorithm === "PRIO" ||
-            algorithm === "P-PRIO"
-          )
+          if (algorithm === "EDF" || algorithm === "PRIO")
             return (
               <Grid item xs>
                 <TextField
