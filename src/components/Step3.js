@@ -38,10 +38,14 @@ const Step3 = ({ results }) => {
               <Typography variant="overline">Average:</Typography>
             </TableCell>
             <TableCell align="center">
-              {getAverage(results.map(({ turnAroundTime }) => turnAroundTime))}
+              {!results.some(
+                ({ turnAroundTime }) => turnAroundTime === undefined
+              ) &&
+                getAverage(results.map(({ turnAroundTime }) => turnAroundTime))}
             </TableCell>
             <TableCell align="center">
-              {getAverage(results.map(({ waitingTime }) => waitingTime))}
+              {!results.some(({ waitingTime }) => waitingTime === undefined) &&
+                getAverage(results.map(({ waitingTime }) => waitingTime))}
             </TableCell>
           </TableRow>
         </TableBody>

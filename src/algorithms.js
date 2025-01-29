@@ -59,13 +59,6 @@ export const EDF = (processes) => {
     }
   }
 
-  // Calculate Turnaround Time (TAT) and Waiting Time (WT) for each process
-  processes.map((process) => {
-    process.turnAroundTime = process.completionTime - process.firstReleaseTime;
-    process.waitingTime = process.turnAroundTime - process.totalExecutionTime;
-    return process;
-  });
-
   return processes;
 };
 
